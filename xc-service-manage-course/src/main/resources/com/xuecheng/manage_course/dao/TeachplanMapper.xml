@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xuecheng.manage_course.dao.TeachplanMapper">
+    <resultMap id="teachplanMap" type="com.xuecheng.framework.domain.course.ext.TeachplanNode">
+        <id column="one_id" property="id"></id>
+        <result column="one_name" property="pname"></result>
+        <collection property="children" ofType="com.xuecheng.framework.domain.course.ext.TeachplanNode">
+            <id  column="two_id" property="id"></id>
+            <result column="two_name" property="pname"></result>
+            <collection property="children" ofType="com.xuecheng.framework.domain.course.ext.TeachplanNode">
+                <id column="three_id" property="id"></id>
+                <result column="three_name" property="pname"></result>
+                <result property="grade" column="three_grade"/>
+                <result property="mediaId" column="mediaId"/>
+                <result property="mediaFileOriginalName" column="mediaFileOriginalName"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <select id="selectList" parameterType="java.lang.String"
+            resultMap="teachplanMap">
+    SELECT
+	a.id as one_id ,
+	a.pname as one_name,
+	b.id as two_id ,
+	b.pname as two_name,
+	c.id as three_id ,
+	c.pname as three_name,
+    tm.media_fileoriginalname mediaFileOriginalName,
+    tm.media_id mediaId
+FROM
+	teachplan a
+	LEFT JOIN teachplan b ON a.id = b.parentid
+    LEFT JOIN teachplan c ON b.id = c.parentid
+    LEFT JOIN teachplan_media tm ON tm.teachplan_id = c.id
+	WHERE a.parentid = 0
+	<if test="_parameter != null and _parameter != ''">
+      AND a.courseid = #{courseId}
+    </if>
+        ORDER BY
+        a.orderby,
+        b.orderby,
+        c.orderby
+    </select>
+</mapper>
